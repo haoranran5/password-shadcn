@@ -1,101 +1,94 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Toaster } from "@/components/ui/toaster";
+import { toast } from "@/hooks/use-toast";
+
+const LOWER = "abcdefghijklmnopqrstuvwxyz";
+const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const NUMBER = "0123456789";
+const SYMBOL = "!@#$%^&*()_+-=<>?";
+
+function generatePassword({ length, lower, upper, number, symbol }: { length: number; lower: boolean; upper: boolean; number: boolean; symbol: boolean; }) {
+  let chars = "";
+  if (lower) chars += LOWER;
+  if (upper) chars += UPPER;
+  if (number) chars += NUMBER;
+  if (symbol) chars += SYMBOL;
+  if (!chars) return "";
+  let pwd = "";
+  for (let i = 0; i < length; i++) {
+    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pwd;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [length, setLength] = useState(12);
+  const [lower, setLower] = useState(true);
+  const [upper, setUpper] = useState(true);
+  const [number, setNumber] = useState(true);
+  const [symbol, setSymbol] = useState(false);
+  const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const handleGenerate = () => {
+    setPassword(generatePassword({ length, lower, upper, number, symbol }));
+    setCopied(false);
+  };
+
+  const handleCopy = async () => {
+    if (password) {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      toast({ title: "复制成功", description: "密码已复制到剪贴板" });
+      setTimeout(() => setCopied(false), 1200);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Toaster />
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>密码生成器</CardTitle>
+          <CardDescription>自定义长度和字符类型，一键生成高强度密码。</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <label className="block mb-2 text-sm font-medium">密码长度：{length}</label>
+            <Slider min={6} max={32} step={1} value={[length]} onValueChange={v => setLength(v[0])} />
+          </div>
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={lower} onCheckedChange={setLower} />小写字母
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={upper} onCheckedChange={setUpper} />大写字母
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={number} onCheckedChange={setNumber} />数字
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={symbol} onCheckedChange={setSymbol} />符号
+            </label>
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium">生成的密码</label>
+            <Input value={password} readOnly disabled className="font-mono select-all" />
+          </div>
+        </CardContent>
+        <CardFooter className="flex gap-4">
+          <Button onClick={handleGenerate} type="button">生成密码</Button>
+          <Button onClick={handleCopy} type="button" variant="secondary" disabled={!password}>
+            {copied ? "已复制" : "复制密码"}
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
